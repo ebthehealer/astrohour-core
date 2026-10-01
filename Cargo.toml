@@ -7,11 +7,9 @@ license = "MIT"
 repository = "https://github.com/YOUR_ORG/astrohour-core"
 
 [dependencies]
-# Solar: sunrise/sunset, moon phase name/emoji/illumination, moonrise/moonset
+# Solar + lunar: sunrise/sunset, moon phase name/emoji/illumination
+# Elongation (lunar day) is calculated directly via Meeus Ch.25/47 formulas
 solunatus = "0.7"
-
-# Lunar: 0-360 degree elongation for lunar day calculation
-esbat = "0.1"
 
 # Time handling
 chrono = { version = "0.4", features = ["serde"] }

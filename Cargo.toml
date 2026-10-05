@@ -1,3 +1,7 @@
+[workspace]
+members = [".", "cli"]
+resolver = "2"
+
 [package]
 name = "astrohour-core"
 version = "0.1.0"
@@ -8,14 +12,13 @@ repository = "https://github.com/YOUR_ORG/astrohour-core"
 
 [dependencies]
 # Solar + lunar: sunrise/sunset, moon phase name/emoji/illumination
-# Elongation (lunar day) is calculated directly via Meeus Ch.25/47 formulas
 solunatus = "0.7"
 
 # Time handling
 chrono = { version = "0.4", features = ["serde"] }
 chrono-tz = "0.10"
 
-# Serialization (for Tauri IPC later)
+# Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 

@@ -45,11 +45,23 @@ use chrono::NaiveDate;
 /// assert!(schedule.sunrise < schedule.sunset);
 /// ```
 pub fn day_schedule(date: NaiveDate, loc: Location) -> DaySchedule {
+    use chrono::{Local, TimeZone, Datelike};
+    use solunatus::astro::Location as SolLocation;
+
     let (sunrise, sunset) = solar::sunrise_sunset(date, loc);
     let ruler = hours::day_ruler(date);
     let all_hours = hours::planetary_hours(date, loc);
     let now_utc = chrono::Utc::now();
     let moon = lunar::moon_phase(now_utc);
+
+    // Moonrise / moonset via solunatus (same crate used for solar)
+    let sol_loc = SolLocation::new(loc.lat, loc.lon).expect("invalid lat/lon");
+    let noon_local = Local
+        .with_ymd_and_hms(date.year(), date.month(), date.day(), 12, 0, 0)
+        .single()
+        .expect("invalid date");
+    let moonrise = solar::calculate_moonrise(&sol_loc, &noon_local);
+    let moonset  = solar::calculate_moonset(&sol_loc, &noon_local);
 
     DaySchedule {
         date,
@@ -57,6 +69,8 @@ pub fn day_schedule(date: NaiveDate, loc: Location) -> DaySchedule {
         planetary_day: ruler,
         sunrise,
         sunset,
+        moonrise,
+        moonset,
         hours: all_hours,
         moon,
     }

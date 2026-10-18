@@ -256,6 +256,10 @@ pub struct DaySchedule {
     pub planetary_day: Planet,
     pub sunrise: DateTime<Local>,
     pub sunset: DateTime<Local>,
+    /// Moonrise for this date at this location (None = no moonrise, e.g. polar)
+    pub moonrise: Option<DateTime<Local>>,
+    /// Moonset for this date at this location
+    pub moonset: Option<DateTime<Local>>,
     /// All 24 planetary hours: indices 0–11 = day, 12–23 = night
     pub hours: Vec<PlanetaryHour>,
     pub moon: MoonPhase,

@@ -3,6 +3,7 @@
 use chrono::{Datelike, DateTime, Local, NaiveDate, TimeZone};
 use solunatus::prelude::*;
 use solunatus::astro::Location as SolLocation;
+pub use solunatus::prelude::{calculate_moonrise, calculate_moonset};
 
 use crate::types::Location;
 

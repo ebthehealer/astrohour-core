@@ -243,6 +243,28 @@ pub struct MoonPhase {
     pub lunar_day: u8,
     /// Sun–Moon elongation in degrees (0–360)
     pub elongation_deg: f64,
+    /// Moon's geocentric ecliptic longitude in degrees (0–360, tropical)
+    pub ecliptic_longitude_deg: f64,
+    /// Tropical zodiac sign the Moon is in
+    pub sign: ZodiacSign,
+}
+
+/// The twelve tropical zodiac signs, 30° each starting at 0° Aries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ZodiacSign {
+    Aries, Taurus, Gemini, Cancer, Leo, Virgo,
+    Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces,
+}
+
+impl ZodiacSign {
+    /// Sign containing the given ecliptic longitude (any real number of degrees).
+    pub fn from_longitude(deg: f64) -> Self {
+        use ZodiacSign::*;
+        const ALL: [ZodiacSign; 12] = [Aries, Taurus, Gemini, Cancer, Leo, Virgo,
+            Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces];
+        let i = (deg.rem_euclid(360.0) / 30.0).floor() as usize;
+        ALL[i.min(11)]
+    }
 }
 
 // ── DaySchedule ───────────────────────────────────────────────────────────────

@@ -12,7 +12,7 @@
 use chrono::{DateTime, Utc};
 use solunatus::prelude::*;
 use solunatus::astro::Location as SolLocation;
-use crate::types::{MoonPhase, Phase};
+use crate::types::{MoonPhase, Phase, ZodiacSign};
 
 const DEG_TO_RAD: f64 = std::f64::consts::PI / 180.0;
 
@@ -166,10 +166,38 @@ pub fn moon_phase(dt: DateTime<Utc>) -> MoonPhase {
     let dt_local = dt.with_timezone(&chrono::Local);
     let moon_pos = lunar_position(&sol_loc, &dt_local);
 
+    let lon = moon_ecliptic_longitude(julian_century(dt));
+
     MoonPhase {
         phase,
         illumination: moon_pos.illumination,
         lunar_day: day,
         elongation_deg: elongation,
+        ecliptic_longitude_deg: lon,
+        sign: ZodiacSign::from_longitude(lon),
+    }
+}
+
+#[cfg(test)]
+mod zodiac_tests {
+    use super::*;
+    use chrono::TimeZone;
+
+    #[test]
+    fn sign_boundaries() {
+        assert_eq!(ZodiacSign::from_longitude(0.0), ZodiacSign::Aries);
+        assert_eq!(ZodiacSign::from_longitude(29.99), ZodiacSign::Aries);
+        assert_eq!(ZodiacSign::from_longitude(30.0), ZodiacSign::Taurus);
+        assert_eq!(ZodiacSign::from_longitude(359.99), ZodiacSign::Pisces);
+        assert_eq!(ZodiacSign::from_longitude(-10.0), ZodiacSign::Pisces);
+    }
+
+    // Meeus example 47.a: 1992-04-12 00:00 TD, Moon longitude 133.167° (Leo).
+    #[test]
+    fn meeus_example_is_leo() {
+        let dt = Utc.with_ymd_and_hms(1992, 4, 12, 0, 0, 0).unwrap();
+        let m = moon_phase(dt);
+        assert!((m.ecliptic_longitude_deg - 133.17).abs() < 0.1, "{}", m.ecliptic_longitude_deg);
+        assert_eq!(m.sign, ZodiacSign::Leo);
     }
 }

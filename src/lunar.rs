@@ -46,6 +46,14 @@ fn sun_ecliptic_longitude(t: f64) -> f64 {
     norm(sun_lon - 0.00569 - 0.00478 * omega.sin())
 }
 
+/// Lahiri (Chitrapaksha) ayanamsa in degrees: the offset between the tropical
+/// and sidereal zodiacs. 23°51′11″ at J2000, growing by general precession
+/// (≈ 50.29″ per year). Accurate to about an arcminute over several centuries,
+/// which is well inside what a sign boundary needs.
+pub fn lahiri_ayanamsa(dt: DateTime<Utc>) -> f64 {
+    23.853_06 + 1.396_97 * julian_century(dt)
+}
+
 /// Moon ecliptic longitude (degrees) — Meeus Ch. 47 (top periodic terms).
 fn moon_ecliptic_longitude(t: f64) -> f64 {
     // Fundamental arguments
@@ -167,6 +175,7 @@ pub fn moon_phase(dt: DateTime<Utc>) -> MoonPhase {
     let moon_pos = lunar_position(&sol_loc, &dt_local);
 
     let lon = moon_ecliptic_longitude(julian_century(dt));
+    let sidereal_lon = norm(lon - lahiri_ayanamsa(dt));
 
     MoonPhase {
         phase,
@@ -175,6 +184,8 @@ pub fn moon_phase(dt: DateTime<Utc>) -> MoonPhase {
         elongation_deg: elongation,
         ecliptic_longitude_deg: lon,
         sign: ZodiacSign::from_longitude(lon),
+        sidereal_longitude_deg: sidereal_lon,
+        sidereal_sign: ZodiacSign::from_longitude(sidereal_lon),
     }
 }
 
@@ -193,6 +204,26 @@ mod zodiac_tests {
     }
 
     // Meeus example 47.a: 1992-04-12 00:00 TD, Moon longitude 133.167° (Leo).
+    #[test]
+    fn lahiri_matches_known_values() {
+        // Published Lahiri ayanamsa: ~23.853° at J2000, ~24.20° in 2026.
+        let j2000 = Utc.with_ymd_and_hms(2000, 1, 1, 12, 0, 0).unwrap();
+        assert!((lahiri_ayanamsa(j2000) - 23.853).abs() < 0.01);
+        let y2026 = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
+        let a = lahiri_ayanamsa(y2026);
+        assert!((a - 24.22).abs() < 0.05, "{a}");
+    }
+
+    #[test]
+    fn sidereal_sits_behind_tropical() {
+        // Meeus example Moon at 133.17° tropical (Leo) is ~Cancer sidereal.
+        let dt = Utc.with_ymd_and_hms(1992, 4, 12, 0, 0, 0).unwrap();
+        let m = moon_phase(dt);
+        assert_eq!(m.sidereal_sign, ZodiacSign::Cancer);
+        let diff = (m.ecliptic_longitude_deg - m.sidereal_longitude_deg).rem_euclid(360.0);
+        assert!((diff - 23.7).abs() < 0.2, "{diff}");
+    }
+
     #[test]
     fn meeus_example_is_leo() {
         let dt = Utc.with_ymd_and_hms(1992, 4, 12, 0, 0, 0).unwrap();

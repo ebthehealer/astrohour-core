@@ -247,6 +247,10 @@ pub struct MoonPhase {
     pub ecliptic_longitude_deg: f64,
     /// Tropical zodiac sign the Moon is in
     pub sign: ZodiacSign,
+    /// Sidereal (Lahiri) ecliptic longitude in degrees (0–360)
+    pub sidereal_longitude_deg: f64,
+    /// Sidereal (Lahiri) zodiac sign the Moon is in
+    pub sidereal_sign: ZodiacSign,
 }
 
 /// The twelve tropical zodiac signs, 30° each starting at 0° Aries.

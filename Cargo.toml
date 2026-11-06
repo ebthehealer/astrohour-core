@@ -4,7 +4,7 @@ resolver = "2"
 
 [package]
 name = "astrohour-core"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Standalone astronomical calculation core for AstroHour — planetary hours, moon phase, lunar day"
 license = "MIT"
